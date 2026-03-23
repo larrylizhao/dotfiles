@@ -1,0 +1,35 @@
+# ── General ────────────────────────────────────
+add_newline = true
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[directory]
+truncation_length = 3
+truncation_symbol = "…/"
+style = "bold lavender"
+
+[git_branch]
+symbol = " "
+style = "bold mauve"
+
+[git_status]
+style = "bold red"
+
+[nodejs]
+symbol = " "
+
+[python]
+symbol = " "
+
+[rust]
+symbol = "🦀 "
+
+[package]
+disabled = true
+
+[cmd_duration]
+min_time = 3000
+format = "took [$duration]($style) "
+style = "bold yellow"

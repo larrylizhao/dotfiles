@@ -1,0 +1,37 @@
+# ── Font ──────────────────────────────────────
+font-family = JetBrainsMono Nerd Font
+font-size = 16
+font-style = Bold
+font-style-italic = Bold Italic
+
+# ── Theme ─────────────────────────────────────
+theme = Catppuccin Mocha
+background-opacity = 0.92
+background-blur-radius = 20
+
+# ── Window ────────────────────────────────────
+window-decoration = false
+window-padding-x = 12
+window-padding-y = 8
+window-padding-balance = true
+
+# ── Cursor ────────────────────────────────────
+cursor-style = bar
+cursor-style-blink = false
+adjust-cursor-thickness = 2
+
+# ── Mouse ─────────────────────────────────────
+mouse-hide-while-typing = true
+
+# ── Shell Integration ─────────────────────────
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+# ── Clipboard ────────────────────────────────
+copy-on-select = clipboard
+clipboard-paste-protection = false
+
+# ── Misc ──────────────────────────────────────
+confirm-close-surface = false
+quit-after-last-window-closed = true
+macos-option-as-alt = true
