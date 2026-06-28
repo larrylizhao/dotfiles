@@ -6,6 +6,8 @@ font-style-italic = Bold Italic
 
 # ── Theme ─────────────────────────────────────
 theme = Catppuccin Mocha
+foreground = 84CCA5
+background = 1A1A1A
 background-opacity = 0.92
 background-blur-radius = 20
 
