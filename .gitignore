@@ -1,0 +1,9 @@
+# ── tmux：插件由 TPM 管理，不纳入版本控制 ──
+tmux/.config/tmux/plugins/
+# resurrect 会话存档（运行时数据）
+tmux/.config/tmux/resurrect/
+
+# ── OS / 编辑器垃圾 ──
+.DS_Store
+*.swp
+*~
