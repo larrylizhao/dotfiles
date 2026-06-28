@@ -9,3 +9,12 @@
 	rebase = true
 [core]
 	editor = nvim
+	autocrlf = input
+	pager = delta
+[merge]
+	conflictstyle = zdiff3
+[diff]
+	algorithm = histogram
+	colorMoved = default
+[rerere]
+	enabled = true
