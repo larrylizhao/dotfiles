@@ -50,3 +50,7 @@ alias nvimdots="NVIM_APPNAME=nvimdots nvim"
 alias awake="caffeinate -disu"
 alias awake1="caffeinate -disu -t 3600"
 alias awake2="caffeinate -disu -t 7200"
+
+# ── tmux ──────────────────────────────────────
+# 新建 session 默认根目录设为 ~/Code（attach / resurrect 恢复不受影响）
+tmux() { ( cd ~/Code 2>/dev/null; command tmux "$@" ) }
