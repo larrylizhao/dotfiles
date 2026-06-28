@@ -4,6 +4,12 @@ eval "$(fnm env --use-on-cd --corepack-enabled)"
 # ── PATH ──────────────────────────────────────
 export PATH="$HOME/.local/bin:$PATH"
 
+# ── Directory ─────────────────────────────────
+setopt AUTO_CD                # 直接输入目录名即可进入
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+
 # ── History ───────────────────────────────────
 HISTSIZE=10000
 SAVEHIST=10000
@@ -13,14 +19,22 @@ setopt HIST_IGNORE_ALL_DUPS   # 去重
 setopt HIST_IGNORE_SPACE      # 空格开头的命令不记录（隐私）
 setopt HIST_REDUCE_BLANKS     # 去除多余空格
 
+# 前缀 + ↑/↓ 搜索历史（输入 "git" 再按 ↑ 只找 git 开头的命令）
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey "^[[A" up-line-or-beginning-search
+bindkey "^[[B" down-line-or-beginning-search
+
 # ── Completion ────────────────────────────────
 autoload -Uz compinit && compinit
+setopt CORRECT                # 命令拼写纠错
 zstyle ':completion:*' menu select                    # 方向键选择补全
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'  # 大小写不敏感
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 大小写不敏感
 
 # ── Plugins ───────────────────────────────────
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # ── fzf ───────────────────────────────────────
 source <(fzf --zsh)
@@ -42,3 +56,4 @@ source ~/.config/zsh/aliases.zsh
 
 # ── Starship Prompt (must be last) ───────────
 eval "$(starship init zsh)"
+[[ -f ~/.iterm2_shell_integration.zsh ]] && source ~/.iterm2_shell_integration.zsh

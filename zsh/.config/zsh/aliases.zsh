@@ -38,3 +38,15 @@ alias gswc="git switch -c"
 alias grh="git reset HEAD"
 alias grhh="git reset HEAD --hard"
 alias gcp="git cherry-pick"
+
+# ── Neovim ────────────────────────────────────
+alias vi="nvim"
+alias lazyvim="NVIM_APPNAME=lazyvim nvim"
+alias nvchad="NVIM_APPNAME=nvchad nvim"
+alias astronvim="NVIM_APPNAME=astronvim nvim"
+alias nvimdots="NVIM_APPNAME=nvimdots nvim"
+
+# ── Caffeinate ────────────────────────────────
+alias awake="caffeinate -disu"
+alias awake1="caffeinate -disu -t 3600"
+alias awake2="caffeinate -disu -t 7200"
