@@ -80,3 +80,29 @@ alias awake2="caffeinate -disu -t 7200"
 # ── tmux ──────────────────────────────────────
 # 全新 session 默认从 ~/Code 启动（attach / resurrect 恢复不受影响）
 tmux() { ( cd ~/Code 2>/dev/null; command tmux "$@" ) }
+
+# ── CCBot ─────────────────────────────────────
+# ccto [topic]  跳到 ccbot session 里名字匹配 <topic> 的窗口
+# （窗口名 = Telegram topic 标题）。大小写不敏感、子串匹配。
+# 无参数 → fzf 选择器。已在 tmux 内用 switch-client，在外则 attach。
+ccto() {
+  local session=ccbot line idx
+  command tmux has-session -t "$session" 2>/dev/null || { echo "❌ 没有 '$session' tmux session"; return 1; }
+  if [[ -n "$1" ]]; then
+    line=$(command tmux list-windows -t "$session" -F '#{window_index} #{window_name}' | grep -iF -- "$1" | head -1)
+    if [[ -z "$line" ]]; then
+      echo "❌ 没有匹配 '$1' 的窗口。$session 现有窗口："
+      command tmux list-windows -t "$session" -F '  #{window_index}: #{window_name}'
+      return 1
+    fi
+  else
+    line=$(command tmux list-windows -t "$session" -F '#{window_index} #{window_name}' | fzf --height 40% --reverse) || return 0
+    [[ -z "$line" ]] && return 0
+  fi
+  idx=${line%% *}   # 用窗口序号定位，兼容含空格/中文的 topic 名
+  if [[ -n "$TMUX" ]]; then
+    command tmux switch-client -t "$session" \; select-window -t "$session:$idx"
+  else
+    command tmux attach -t "$session" \; select-window -t "$session:$idx"
+  fi
+}
