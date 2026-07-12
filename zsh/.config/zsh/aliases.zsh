@@ -118,3 +118,18 @@ ccwork() {
   command tmux new-window -t ccbot -n "$slug" -c "$dir" "$HOME/.ccbot/claude-worktree.sh"
   ccto "$slug"   # 顺手切过去
 }
+
+# ── GLM（智谱）委派 ────────────────────────────
+# glm "任务描述"  用 GLM-4.6 跑一轮 headless claude，让 GLM 帮你干活。
+# GLM 端点是 Anthropic 兼容的，所以套一层 claude -p 即可获得完整 agent 能力。
+# 密钥读自 ~/.config/glm/apikey（仓库外真实文件，永不入库）。
+# 额外 flag 透传：glm --model glm-4.5 "..."、glm --permission-mode acceptEdits "改代码"。
+glm() {
+  local keyfile=~/.config/glm/apikey
+  [[ -r "$keyfile" ]] || { echo "❌ 没找到 GLM 密钥：$keyfile" >&2; return 1; }
+  ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic" \
+  ANTHROPIC_AUTH_TOKEN="$(< "$keyfile")" \
+  ANTHROPIC_MODEL="glm-4.6" \
+  ANTHROPIC_SMALL_FAST_MODEL="glm-4.5-air" \
+  command claude -p "$@"
+}
