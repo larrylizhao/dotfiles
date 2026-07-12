@@ -106,3 +106,15 @@ ccto() {
     command tmux attach -t "$session" \; select-window -t "$session:$idx"
   fi
 }
+
+# ccwork <slug> [dir]  在 ccbot session 起一个「可被手机接管」的会话（含 worktree）
+# dir 默认 ~/Code/<slug 冒号前的部分>。窗口跑 worktree 包装脚本：git 仓库自动
+# 建 worktree+分支后进 claude。之后手机建 topic 发消息 → 窗口选择器点它即接管。
+ccwork() {
+  local slug="$1" dir="${2:-$HOME/Code/${1%%:*}}"
+  [[ -z "$slug" ]] && { echo "用法: ccwork <slug> [dir]"; return 1; }
+  [[ -d "$dir" ]] || { echo "❌ 目录不存在: $dir"; return 1; }
+  command tmux has-session -t ccbot 2>/dev/null || { echo "❌ 没有 'ccbot' tmux session（CCBot 守护进程没起？）"; return 1; }
+  command tmux new-window -t ccbot -n "$slug" -c "$dir" "$HOME/.ccbot/claude-worktree.sh"
+  ccto "$slug"   # 顺手切过去
+}
