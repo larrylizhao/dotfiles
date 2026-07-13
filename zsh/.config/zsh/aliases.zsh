@@ -120,16 +120,49 @@ ccwork() {
 }
 
 # ── GLM（智谱）委派 ────────────────────────────
-# glm "任务描述"  用 GLM-4.6 跑一轮 headless claude，让 GLM 帮你干活。
-# GLM 端点是 Anthropic 兼容的，所以套一层 claude -p 即可获得完整 agent 能力。
+# glm "任务描述"  跑一轮 headless claude 让 GLM 帮你干活（Anthropic 兼容端点）。
+# 自动选模型：按偏好顺序（好→兜底）用 1-token 预检额度，永远用「当前可用的最好模型」，
+# 额度用光自动降级；预检避免了把已耗尽的模型丢给 claude 傻等重试。
 # 密钥读自 ~/.config/glm/apikey（仓库外真实文件，永不入库）。
-# 额外 flag 透传：glm --model glm-4.5 "..."、glm --permission-mode acceptEdits "改代码"。
+# 覆盖：GLM_MODELS="glm-5.2 glm-4.5-air" 改偏好顺序；glm --model X "..." 跳过自动选择。
+# 端点行为对齐官方 Claude Code 配置：长超时 + 关闭对 Anthropic 的非必要遥测回连。
 glm() {
   local keyfile=~/.config/glm/apikey
+  local base="https://open.bigmodel.cn/api/anthropic"
   [[ -r "$keyfile" ]] || { echo "❌ 没找到 GLM 密钥：$keyfile" >&2; return 1; }
-  ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic" \
-  ANTHROPIC_AUTH_TOKEN="$(< "$keyfile")" \
-  ANTHROPIC_MODEL="glm-4.6" \
-  ANTHROPIC_SMALL_FAST_MODEL="glm-4.5-air" \
-  command claude -p "$@"
+  local key; key="$(< "$keyfile")"
+
+  # 端点行为对齐官方配置：长超时（复杂任务不被切）+ 关闭对 Anthropic 的非必要回连
+  local -a envcommon=(
+    ANTHROPIC_BASE_URL="$base"
+    ANTHROPIC_AUTH_TOKEN="$key"
+    API_TIMEOUT_MS="3000000"
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+    ANTHROPIC_SMALL_FAST_MODEL="glm-4.5-air"
+  )
+
+  # 你显式 --model 时尊重之，跳过自动选择
+  # 用 env 而非赋值前缀：数组展开的 VAR=val 不会被 zsh 当赋值前缀识别，必须交给 env
+  if [[ "$*" == *"--model"* ]]; then
+    env "${envcommon[@]}" claude -p "$@"
+    return
+  fi
+
+  # 偏好顺序：最好 → 兜底（glm-5.2 旗舰 → glm-4.6 → air 额度最厚兜底）
+  local -a models=(${=GLM_MODELS:-glm-5.2 glm-4.6 glm-4.5-air})
+  local m resp http body model=""
+  for m in "${models[@]}"; do
+    resp=$(curl -s --max-time 15 -w $'\n%{http_code}' "$base/v1/messages" \
+      -H "x-api-key: $key" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" \
+      -d "{\"model\":\"$m\",\"max_tokens\":1,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}")
+    http="${resp##*$'\n'}"; body="${resp%$'\n'*}"
+    if [[ "$http" == "200" && "$body" != *'"type":"error"'* ]]; then
+      model="$m"; break
+    fi
+    echo "⚠️ $m 不可用（HTTP $http），降级尝试下一个…" >&2
+  done
+  [[ -z "$model" ]] && { echo "❌ 所有候选模型都不可用（额度耗尽或端点故障）" >&2; return 1; }
+  [[ "$model" != "${models[1]}" ]] && echo "→ 已降级到 $model" >&2
+
+  env "${envcommon[@]}" ANTHROPIC_MODEL="$model" claude -p "$@"
 }
