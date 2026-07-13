@@ -81,43 +81,7 @@ alias awake2="caffeinate -disu -t 7200"
 # 全新 session 默认从 ~/Code 启动（attach / resurrect 恢复不受影响）
 tmux() { ( cd ~/Code 2>/dev/null; command tmux "$@" ) }
 
-# ── CCBot ─────────────────────────────────────
-# ccto [topic]  跳到 ccbot session 里名字匹配 <topic> 的窗口
-# （窗口名 = Telegram topic 标题）。大小写不敏感、子串匹配。
-# 无参数 → fzf 选择器。已在 tmux 内用 switch-client，在外则 attach。
-ccto() {
-  local session=ccbot line idx
-  command tmux has-session -t "$session" 2>/dev/null || { echo "❌ 没有 '$session' tmux session"; return 1; }
-  if [[ -n "$1" ]]; then
-    line=$(command tmux list-windows -t "$session" -F '#{window_index} #{window_name}' | grep -iF -- "$1" | head -1)
-    if [[ -z "$line" ]]; then
-      echo "❌ 没有匹配 '$1' 的窗口。$session 现有窗口："
-      command tmux list-windows -t "$session" -F '  #{window_index}: #{window_name}'
-      return 1
-    fi
-  else
-    line=$(command tmux list-windows -t "$session" -F '#{window_index} #{window_name}' | fzf --height 40% --reverse) || return 0
-    [[ -z "$line" ]] && return 0
-  fi
-  idx=${line%% *}   # 用窗口序号定位，兼容含空格/中文的 topic 名
-  if [[ -n "$TMUX" ]]; then
-    command tmux switch-client -t "$session" \; select-window -t "$session:$idx"
-  else
-    command tmux attach -t "$session" \; select-window -t "$session:$idx"
-  fi
-}
-
-# ccwork <slug> [dir]  在 ccbot session 起一个「可被手机接管」的会话（含 worktree）
-# dir 默认 ~/Code/<slug 冒号前的部分>。窗口跑 worktree 包装脚本：git 仓库自动
-# 建 worktree+分支后进 claude。之后手机建 topic 发消息 → 窗口选择器点它即接管。
-ccwork() {
-  local slug="$1" dir="${2:-$HOME/Code/${1%%:*}}"
-  [[ -z "$slug" ]] && { echo "用法: ccwork <slug> [dir]"; return 1; }
-  [[ -d "$dir" ]] || { echo "❌ 目录不存在: $dir"; return 1; }
-  command tmux has-session -t ccbot 2>/dev/null || { echo "❌ 没有 'ccbot' tmux session（CCBot 守护进程没起？）"; return 1; }
-  command tmux new-window -t ccbot -n "$slug" -c "$dir" "$HOME/.ccbot/claude-worktree.sh"
-  ccto "$slug"   # 顺手切过去
-}
+# ── CCBot 相关命令已抽到 ~/.config/zsh/ccbot.zsh（由 .zshrc 单独 source）──
 
 # ── GLM（智谱）委派 ────────────────────────────
 # glm "任务描述"  跑一轮 headless claude 让 GLM 帮你干活（Anthropic 兼容端点）。

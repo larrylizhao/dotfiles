@@ -53,6 +53,7 @@ eval "$(zoxide init zsh)"
 
 # ── Aliases ───────────────────────────────────
 source ~/.config/zsh/aliases.zsh
+source ~/.config/zsh/ccbot.zsh
 
 # ── Starship Prompt (must be last) ───────────
 eval "$(starship init zsh)"
