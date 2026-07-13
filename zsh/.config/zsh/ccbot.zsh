@@ -76,7 +76,7 @@ cctake() {
   [[ -z "$src" || "$src" != *:* ]] && { echo "用法: cctake <session>:<window>（如 product:1）"; return 1; }
   command tmux has-session -t ccbot 2>/dev/null || { echo "❌ 没有 ccbot session"; return 1; }
   local wid=$(command tmux list-windows -t "${src%%:*}" -F '#{window_id} #{window_index} #{window_name}' \
-              | awk -v w="${src#*:}" '$2==w||$3==w{print $1;exit}')
+              | awk -v w="${src#*:}" '{n=$0; sub(/^[^ ]+ [^ ]+ /,"",n)} $2==w||n==w{print $1;exit}')
   [[ -z "$wid" ]] && { echo "❌ 找不到窗口 $src"; return 1; }
   command tmux move-window -s "$src" -t ccbot: || return 1
   _ccbot_rekey "$wid"
@@ -98,7 +98,7 @@ cclink() {
   [[ -z "$src" || "$src" != *:* ]] && { echo "用法: cclink <session>:<window>（如 product:1）"; return 1; }
   command tmux has-session -t ccbot 2>/dev/null || { echo "❌ 没有 ccbot session"; return 1; }
   local wid=$(command tmux list-windows -t "${src%%:*}" -F '#{window_id} #{window_index} #{window_name}' \
-              | awk -v w="${src#*:}" '$2==w||$3==w{print $1;exit}')
+              | awk -v w="${src#*:}" '{n=$0; sub(/^[^ ]+ [^ ]+ /,"",n)} $2==w||n==w{print $1;exit}')
   [[ -z "$wid" ]] && { echo "❌ 找不到窗口 $src"; return 1; }
   command tmux link-window -s "$src" -t ccbot: || return 1
   _ccbot_rekey "$wid"
@@ -113,6 +113,7 @@ cclink() {
 ccspawn() {
   local name="$1" token="$2"
   [[ -z "$name" ]] && { echo "用法: ccspawn <name> [bot_token]"; return 1; }
+  [[ "$name" == *[!A-Za-z0-9_-]* ]] && { echo "❌ name 只能含字母数字、_、-（不能有 . : / 空格等）"; return 1; }
   local dir="$HOME/.ccbot-$name" uid=$(id -u)
   local label="com.larryli.ccbot-$name"
   local plist="$HOME/Library/LaunchAgents/$label.plist"
