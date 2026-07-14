@@ -8,6 +8,20 @@
 #   cctake <session>:<window>   把别的 session 的窗口「迁进」ccbot（move，一次性转交）
 #   cclink <session>:<window>   把别的 session 的窗口「链接」进 ccbot（link，原 session 保留）
 #   ccspawn <name> [token]      起一套独立 CCBot 实例：一个群 = 一个 tmux session
+#
+# ── 已知局限 / TODO ────────────────────────────────────────────────────
+# ccto/ccwork/cctake/cclink 目前写死 primary 实例（session=ccbot, ~/.ccbot）。
+# ccspawn 起的独立实例（如 product：session=product, dir=~/.ccbot-product，
+# session_map key 前缀 product:）用不了这几个命令——只能手动 tmux 操作，或直接
+# 在该 session 里干活（cctake/cclink 本就是「往 primary 拉窗口」的语义，对独立实例
+# 意义不大；主要缺的是 per-实例的 ccto/ccwork）。
+#
+# 将来若常用多实例，重构方向已定：做 `cci <instance> <子命令>` 分发器——
+#   · 把「实例 → (session名, CCBOT_DIR, key前缀)」解析收敛到单一入口；
+#   · ccto/ccwork/… 保留为「默认 instance=ccbot」的简写，委派到共享核心；
+#   · cci product work slug / cci product to foo 作为多实例前端。
+# 优于「给每个函数加 -i」：后者要在 N 个函数里重复 flag 解析，且省不掉核心参数化。
+# 现状：单实例够用，暂不重构（YAGNI）。
 # ───────────────────────────────────────────────────────────────────────
 
 # ccto [topic]  跳到 ccbot session 里名字匹配 <topic> 的窗口
