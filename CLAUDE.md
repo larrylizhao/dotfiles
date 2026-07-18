@@ -32,7 +32,7 @@ larryli 的个人配置仓库。GNU Stow 风格管理,远程 `git@github.com:lar
 
 - **shell**: zsh + fnm(node)+ starship + fzf + zsh-autosuggestions/syntax-highlighting(brew)
 - **terminal**: ghostty(Catppuccin Mocha 基础上自定义前/背景色)
-- **tmux**: prefix `C-s`,Rosé Pine 状态栏;TPM 管理插件;resurrect+continuum 做 session 持久化(每 15min 自动存档、启动自动恢复、恢复 claude 带 `--continue`)。手动键:`prefix+r` reload、`prefix+S`/`prefix+R` 存/恢复。
+- **tmux**: prefix `C-s`,Rosé Pine 状态栏;TPM 管理插件;resurrect+continuum 做 session 持久化(每 15min 自动存档、启动自动恢复、node/npm/pnpm/yarn 进程重启),assistant-resurrect 按 session ID 精确恢复 claude 会话(靠注入 `~/.claude/settings.json` 的 SessionStart/End hook;claude 绝不能进 `@resurrect-processes`,会双开)。手动键:`prefix+r` reload、`prefix+S`/`prefix+R` 存/恢复。
 - **nvim**: 四套 distro 经 `NVIM_APPNAME` 别名切换(`lazyvim`/`nvchad`/`astronvim`/`nvimdots`),均未纳管。
 
 ## 换新机恢复
