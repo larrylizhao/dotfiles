@@ -81,6 +81,15 @@ os.replace(t, f)
 PY
 }
 
+# _ccbot_pin_name <window-id> <name>  固定窗口名：关掉 automatic-rename / allow-rename
+# （否则 claude 会把窗口名刷成自己的版本号，如 2.1.209），并设为 <name>。
+# 之后在 Telegram 改 topic 名仍能覆盖（显式 rename-window 不受这两个开关限制）。
+_ccbot_pin_name() {
+  command tmux set-option -w -t "$1" automatic-rename off 2>/dev/null
+  command tmux set-option -w -t "$1" allow-rename off 2>/dev/null
+  command tmux rename-window -t "$1" "$2"
+}
+
 # cctake <session>:<window>  把别的 tmux session 里在跑 claude 的窗口「迁进」ccbot（move），
 # 并修正 session_map，使其可被 Telegram 接管。适合「一次性转交给手机」。
 # 原理：CCBot 只监控 key 以 "ccbot:" 开头的条目；迁移保留 window-id，改前缀即打通输出。
@@ -94,6 +103,7 @@ cctake() {
   [[ -z "$wid" ]] && { echo "❌ 找不到窗口 $src"; return 1; }
   command tmux move-window -s "$src" -t ccbot: || return 1
   _ccbot_rekey "$wid"
+  _ccbot_pin_name "$wid" "${src%%:*}"   # 固定窗口名为源 session 名
   echo "✅ 已迁入 ccbot（$wid）。手机上在空 topic 发条消息 → 选择器选它接管。"
   if [[ -n "$TMUX" ]]; then
     command tmux switch-client -t ccbot \; select-window -t "$wid"
@@ -116,6 +126,7 @@ cclink() {
   [[ -z "$wid" ]] && { echo "❌ 找不到窗口 $src"; return 1; }
   command tmux link-window -s "$src" -t ccbot: || return 1
   _ccbot_rekey "$wid"
+  _ccbot_pin_name "$wid" "${src%%:*}"   # 固定窗口名为源 session 名（否则被 claude 版本号刷掉）
   echo "✅ 已链接进 ccbot（$wid），原 session 照旧可用。手机在空 topic 发消息 → 选择器选它接管。"
   echo "⚠️ 用完请在 Telegram /unbind（勿关话题）；桌面解绑: tmux unlink-window -t ccbot:$wid"
 }
